@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Briefcase, DollarSign, Calendar, Globe } from "lucide-react"
+import { ArrowLeft, Briefcase, DollarSign, Calendar, Globe, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import {
   Dialog,
@@ -52,6 +53,7 @@ export default function JobDetailPage() {
   const [employer, setEmployer] = useState<any>(null)
   const [relatedJobs, setRelatedJobs] = useState<Job[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
   const [applicationMessage, setApplicationMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -72,20 +74,24 @@ export default function JobDetailPage() {
     const fetchJobDetails = async () => {
       try {
         setIsLoading(true)
+        setError(null)
         const jobId = params.id as string
 
         // Fetch job details
         const jobResponse = await fetch(`http://localhost:8000/job/${jobId}`)
         if (!jobResponse.ok) {
-          throw new Error("Failed to fetch job details")
+          throw new Error(`Failed to fetch job details: ${jobResponse.status} ${jobResponse.statusText}`)
         }
 
         const jobData = await jobResponse.json()
+        if (!jobData || !jobData.job) {
+          throw new Error("Invalid job data received from server")
+        }
 
         // Fetch employer details
         const employerResponse = await fetch(`http://localhost:8000/user/${jobData.job.employer_id}`)
         if (!employerResponse.ok) {
-          throw new Error("Failed to fetch employer details")
+          throw new Error(`Failed to fetch employer details: ${employerResponse.status}`)
         }
 
         const employerData = await employerResponse.json()
@@ -93,24 +99,26 @@ export default function JobDetailPage() {
         // Fetch all jobs to get related jobs from same employer
         const allJobsResponse = await fetch("http://localhost:8000/alljobs")
         if (!allJobsResponse.ok) {
-          throw new Error("Failed to fetch all jobs")
+          throw new Error(`Failed to fetch all jobs: ${allJobsResponse.status}`)
         }
 
         const allJobsData = await allJobsResponse.json()
+        // Handle both array and object response formats
+        const jobsArray = Array.isArray(allJobsData) ? allJobsData : allJobsData.jobs || []
 
         // Filter related jobs (same employer, different job)
-        const related = allJobsData
+        const related = jobsArray
           .filter((j: any) => j.employer_id === jobData.job.employer_id && j.id !== jobId)
           .slice(0, 3)
           .map((j: any) => ({
             ...j,
-            company_name: employerData.employer?.company_name,
+            company_name: employerData.employer?.company_name || "Unknown Company",
           }))
 
         // Check if user has already applied
         const userResponse = await fetch(`http://localhost:8000/user/${user.id}`)
         if (!userResponse.ok) {
-          throw new Error("Failed to fetch user applications")
+          throw new Error(`Failed to fetch user applications: ${userResponse.status}`)
         }
 
         const userData = await userResponse.json()
@@ -119,7 +127,8 @@ export default function JobDetailPage() {
         // Set state with fetched data
         setJob({
           ...jobData.job,
-          company_name: employerData.employer?.company_name,
+          company_name: employerData.employer?.company_name || "Unknown Company",
+          company_logo_url: employerData.employer?.company_logo_url,
         })
         setEmployer(employerData)
         setRelatedJobs(related)
@@ -127,6 +136,7 @@ export default function JobDetailPage() {
         setIsLoading(false)
       } catch (error) {
         console.error("Error fetching job details:", error)
+        setError(error instanceof Error ? error.message : "Failed to load job details. Please try again.")
         setIsLoading(false)
       }
     }
@@ -136,8 +146,15 @@ export default function JobDetailPage() {
 
   // Format date
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString()
+    if (!dateString) return "No date"
+
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString()
+    } catch (error) {
+      console.error("Invalid date format:", dateString)
+      return "Invalid date"
+    }
   }
 
   // Handle job application
@@ -145,13 +162,19 @@ export default function JobDetailPage() {
     if (!user || !job) return
 
     setIsSubmitting(true)
+    setError(null)
 
     try {
+      // Validate resume URL
+      if (!user.candidate?.resume_url) {
+        throw new Error("Please upload a resume in your profile before applying")
+      }
+
       // Create application object
       const applicationData = {
         candidate_id: user.id,
         job_id: job.id,
-        resume_url: user.candidate?.resume_url || "https://example.com/resume.pdf",
+        resume_url: user.candidate.resume_url,
         message: applicationMessage,
         status: "pending",
       }
@@ -166,7 +189,8 @@ export default function JobDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to submit application")
+        const errorText = await response.text().catch(() => "Unknown error")
+        throw new Error(`Failed to submit application: ${response.status} - ${errorText}`)
       }
 
       setIsApplyDialogOpen(false)
@@ -178,9 +202,10 @@ export default function JobDetailPage() {
       })
     } catch (error) {
       console.error("Error submitting application:", error)
+      setError(error instanceof Error ? error.message : "Failed to submit application. Please try again.")
       toast({
         title: "Error",
-        description: "Failed to submit application. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit application. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -193,6 +218,23 @@ export default function JobDetailPage() {
       <CandidateLayout>
         <div className="flex items-center justify-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </CandidateLayout>
+    )
+  }
+
+  if (error && !job) {
+    return (
+      <CandidateLayout>
+        <div className="flex-1 p-4 md:p-8 pt-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button className="mt-4" onClick={() => router.push(`/candidate/dashboard/${user?.id}`)}>
+            Back to Dashboard
+          </Button>
         </div>
       </CandidateLayout>
     )
@@ -225,6 +267,14 @@ export default function JobDetailPage() {
           <h2 className="text-3xl font-bold tracking-tight">Job Details</h2>
         </div>
 
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="md:col-span-2">
             <CardHeader>
@@ -241,30 +291,39 @@ export default function JobDetailPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-wrap gap-4">
-                <div className="flex items-center text-sm">
-                  <Briefcase className="mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>{job.type}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <DollarSign className="mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>{job.salary}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>Deadline: {formatDate(job.deadline)}</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
-                  <span>Posted: {formatDate(job.created_at)}</span>
-                </div>
+                {job.type && (
+                  <div className="flex items-center text-sm">
+                    <Briefcase className="mr-1 h-4 w-4 text-muted-foreground" />
+                    <span>{job.type}</span>
+                  </div>
+                )}
+                {job.salary && (
+                  <div className="flex items-center text-sm">
+                    <DollarSign className="mr-1 h-4 w-4 text-muted-foreground" />
+                    <span>{job.salary}</span>
+                  </div>
+                )}
+                {job.deadline && (
+                  <div className="flex items-center text-sm">
+                    <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
+                    <span>Deadline: {formatDate(job.deadline)}</span>
+                  </div>
+                )}
+                {job.created_at && (
+                  <div className="flex items-center text-sm">
+                    <Calendar className="mr-1 h-4 w-4 text-muted-foreground" />
+                    <span>Posted: {formatDate(job.created_at)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-1">
-                {job.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
+                {job.tags &&
+                  job.tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
               </div>
 
               <div>
