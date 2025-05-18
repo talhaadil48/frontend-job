@@ -81,7 +81,8 @@ interface UserData {
 export default function CandidateProfilePage() {
   const router = useRouter()
   const params = useParams()
-  const { user } = useAuth()
+  const storedUser = localStorage.getItem("user")
+  const user = storedUser ? JSON.parse(storedUser) : null
   const { toast } = useToast()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -171,7 +172,7 @@ export default function CandidateProfilePage() {
     }
 
     fetchUserData()
-  }, [user, router, params.id, profileForm, resumeForm])
+  }, [router, params.id, profileForm, resumeForm])
 
   // Handle profile image change
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -522,7 +523,7 @@ export default function CandidateProfilePage() {
                               <div className="mt-2">
                                 <p className="text-sm text-muted-foreground mb-1">Current image:</p>
                                 <img
-                                  src={userData.user.profile_picture_url || "/placeholder.svg"}
+                                  src={userData.user.profile_picture_url || "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="}
                                   alt="Current profile"
                                   className="h-20 w-20 object-cover rounded-full"
                                 />

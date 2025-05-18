@@ -41,7 +41,8 @@ const employerCache = new Map<string, { company_name: string; company_logo_url: 
 export default function CandidateDashboard() {
   const router = useRouter()
   const params = useParams()
-  const { user } = useAuth()
+  const storedUser = localStorage.getItem("user")
+  const user = storedUser ? JSON.parse(storedUser) : null
   const [jobs, setJobs] = useState<Job[]>([])
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -168,7 +169,7 @@ export default function CandidateDashboard() {
         const currentPageJobs = jobsArray.slice(startIndex, endIndex)
 
         // Get unique employer IDs for this page
-        const employerIds = Array.from(new Set(currentPageJobs.map((job) => job.employer_id)))
+        const employerIds = Array.from(new Set(currentPageJobs.map((job: Job) => job.employer_id))) as string[]
 
         // Fetch employer data for these jobs
         await fetchEmployerData(employerIds)
@@ -226,7 +227,7 @@ export default function CandidateDashboard() {
     // Reset to first page and fetch jobs
     setCurrentPage(1)
     fetchJobs(1, true)
-  }, [user, router, params.id, fetchJobs])
+  }, [router, params.id, fetchJobs])
 
   // Load more jobs when page changes
   useEffect(() => {

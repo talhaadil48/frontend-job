@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { v4 as uuidv4 } from "uuid"
 import type { User } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 
 // Form schema
 const formSchema = z.object({
@@ -39,6 +40,7 @@ interface CreateAdminModalProps {
 
 export default function CreateAdminModal({ isOpen, onClose, onCreateAdmin }: CreateAdminModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,7 +53,7 @@ export default function CreateAdminModal({ isOpen, onClose, onCreateAdmin }: Cre
   })
 
   // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
 
     try {
@@ -67,13 +69,49 @@ export default function CreateAdminModal({ isOpen, onClose, onCreateAdmin }: Cre
         created_at: new Date().toISOString(),
       }
 
+      // Send request to API to create admin
+      const response = await fetch("http://localhost:8000/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password_hash: "hashed_" + values.password, // In a real app, this would be properly hashed
+          role: "admin",
+          is_blocked: false,
+          profile_picture_url: null,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.message || "Failed to create admin user")
+      }
+
+      const data = await response.json()
+
+      // Update the newAdmin with the returned ID from the API
+      newAdmin.id = data.id || newAdmin.id
+
       // Call the onCreateAdmin callback
       onCreateAdmin(newAdmin)
 
       // Reset form
       form.reset()
+
+      toast({
+        title: "Admin created",
+        description: `${values.name} has been created successfully.`,
+      })
     } catch (error) {
       console.error("Error creating admin:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create admin user",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }

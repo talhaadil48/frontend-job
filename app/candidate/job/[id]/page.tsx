@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Briefcase, DollarSign, Calendar, Globe, AlertCircle } from "lucide-react"
+import { ArrowLeft, Briefcase, DollarSign, Calendar, Globe, AlertCircle, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import {
@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { set } from "date-fns"
 
 interface Job {
   id: string
@@ -47,7 +48,8 @@ interface Employer {
 export default function JobDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const { user } = useAuth()
+  const storedUser = localStorage.getItem("user")
+  const user = storedUser ? JSON.parse(storedUser) : null
   const { toast } = useToast()
   const [job, setJob] = useState<Job | null>(null)
   const [employer, setEmployer] = useState<any>(null)
@@ -58,7 +60,7 @@ export default function JobDetailPage() {
   const [applicationMessage, setApplicationMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasApplied, setHasApplied] = useState(false)
-
+  const [users,setUsers] = useState<any>(null)
   useEffect(() => {
     // Check if user is logged in and is a candidate
     if (!user) {
@@ -122,6 +124,7 @@ export default function JobDetailPage() {
         }
 
         const userData = await userResponse.json()
+        setUsers(userData)
         const existingApplication = userData.applications?.find((app: any) => app.job_id === jobId)
 
         // Set state with fetched data
@@ -142,7 +145,7 @@ export default function JobDetailPage() {
     }
 
     fetchJobDetails()
-  }, [user, router, params.id])
+  }, [router, params.id])
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -163,10 +166,11 @@ export default function JobDetailPage() {
 
     setIsSubmitting(true)
     setError(null)
+   
 
     try {
       // Validate resume URL
-      if (!user.candidate?.resume_url) {
+      if (!users.candidate?.resume_url) {
         throw new Error("Please upload a resume in your profile before applying")
       }
 
@@ -174,7 +178,7 @@ export default function JobDetailPage() {
       const applicationData = {
         candidate_id: user.id,
         job_id: job.id,
-        resume_url: user.candidate.resume_url,
+        resume_url: users.candidate.resume_url,
         message: applicationMessage,
         status: "pending",
       }
@@ -426,9 +430,9 @@ export default function JobDetailPage() {
               <h4 className="font-medium text-sm">Your Resume</h4>
               <div className="flex items-center p-2 border rounded-md">
                 <div className="text-sm">
-                  {user?.candidate?.resume_url ? (
+                  {users?.candidate?.resume_url ? (
                     <a
-                      href={user.candidate.resume_url}
+                      href={users.candidate.resume_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
@@ -457,7 +461,7 @@ export default function JobDetailPage() {
             <Button variant="outline" onClick={() => setIsApplyDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleApply} disabled={isSubmitting || !user?.candidate?.resume_url}>
+            <Button onClick={handleApply} disabled={isSubmitting || !users.candidate.resume_url}>
               {isSubmitting ? "Submitting..." : "Submit Application"}
             </Button>
           </DialogFooter>

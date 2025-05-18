@@ -48,23 +48,30 @@ interface EditJobModalProps {
 }
 
 export default function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps) {
-  const [tags, setTags] = useState<string[]>(job.tags)
+  const [tags, setTags] = useState<string[]>(job.tags || [])
   const [tagInput, setTagInput] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Format deadline date for input
-  const deadlineDate = new Date(job.deadline)
-  const formattedDeadline = deadlineDate.toISOString().split("T")[0]
+  const formatDateForInput = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return date.toISOString().split("T")[0]
+    } catch (error) {
+      // Return today's date as fallback
+      return new Date().toISOString().split("T")[0]
+    }
+  }
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: job.title,
+      title: job.title || "",
       description: job.description || "",
       type: job.type || "",
       salary: job.salary || "",
-      deadline: formattedDeadline,
+      deadline: formatDateForInput(job.deadline),
     },
   })
 
@@ -82,7 +89,7 @@ export default function EditJobModal({ isOpen, onClose, job, onSave }: EditJobMo
   }
 
   // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
 
     try {
@@ -98,9 +105,10 @@ export default function EditJobModal({ isOpen, onClose, job, onSave }: EditJobMo
       }
 
       // Call the onSave callback
-      onSave(updatedJob)
+      await onSave(updatedJob)
     } catch (error) {
       console.error("Error updating job:", error)
+    } finally {
       setIsSubmitting(false)
     }
   }
@@ -165,6 +173,7 @@ export default function EditJobModal({ isOpen, onClose, job, onSave }: EditJobMo
                         <SelectItem value="Contract">Contract</SelectItem>
                         <SelectItem value="Freelance">Freelance</SelectItem>
                         <SelectItem value="Internship">Internship</SelectItem>
+                        <SelectItem value="Remote">Remote</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -237,7 +246,7 @@ export default function EditJobModal({ isOpen, onClose, job, onSave }: EditJobMo
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

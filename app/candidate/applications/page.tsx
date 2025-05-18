@@ -33,21 +33,14 @@ interface Application {
 
 export default function CandidateApplicationsPage() {
   const router = useRouter()
-  const { user } = useAuth()
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const stored =  localStorage.getItem("user")
+  const user = stored ? JSON.parse(stored) : null
 
   useEffect(() => {
     // Check if user is logged in and is a candidate
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    if (user.role !== "candidate") {
-      router.push("/")
-      return
-    }
+  
 
     // Fetch applications data from API
     const fetchApplications = async () => {
@@ -102,7 +95,7 @@ export default function CandidateApplicationsPage() {
     }
 
     fetchApplications()
-  }, [user, router])
+  }, [router])
 
   // Format date
   const formatDate = (dateString: string) => {

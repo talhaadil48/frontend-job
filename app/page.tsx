@@ -1,8 +1,26 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Briefcase, Users, Award, Clock } from "lucide-react"
 
 export default function LandingPage() {
+  const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState("")
+  const [userId, setUserId] = useState("")
+
+  useEffect(() => {
+    // Check if user is logged in
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser)
+      setUser(parsedUser)
+      setUserRole(parsedUser.role || "")
+      setUserId(parsedUser.id || "")
+    }
+  }, [])
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -17,31 +35,55 @@ export default function LandingPage() {
                 JobConnect bridges the gap between talented professionals and forward-thinking companies. Start your
                 journey today.
               </p>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href="/signup?role=candidate">
-                  <Button size="lg" className="w-full min-[400px]:w-auto">
-                    Join as Candidate
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/signup?role=employer">
-                  <Button size="lg" variant="outline" className="w-full min-[400px]:w-auto">
-                    Join as Employer
-                  </Button>
-                </Link>
-              </div>
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Already have an account?{" "}
-                  <Link href="/login" className="text-primary underline underline-offset-2">
-                    Log in
+
+              {!user ? (
+                <>
+                  <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                    <Link href="/signup?role=candidate">
+                      <Button size="lg" className="w-full min-[400px]:w-auto">
+                        Join as Candidate
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/signup?role=employer">
+                      <Button size="lg" variant="outline" className="w-full min-[400px]:w-auto">
+                        Join as Employer
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Already have an account?{" "}
+                      <Link href="/login" className="text-primary underline underline-offset-2">
+                        Log in
+                      </Link>
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                  <Link
+                    href={
+                      userRole === "admin"
+                        ? "/admin/dashboard"
+                        : userRole === "candidate"
+                          ? `/candidate/dashboard/${userId}`
+                          : userRole === "employer"
+                            ? `/employer/dashboard/${userId}`
+                            : "/dashboard"
+                    }
+                  >
+                    <Button size="lg" className="w-full min-[400px]:w-auto">
+                      Go to Dashboard
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </Link>
-                </p>
-              </div>
+                </div>
+              )}
             </div>
             <div className="mx-auto lg:mx-0 relative">
               <img
-                src="/placeholder.svg?height=550&width=550"
+                src="/pic.jpeg"
                 alt="Job Connect Platform"
                 width={550}
                 height={550}
@@ -182,23 +224,45 @@ export default function LandingPage() {
                 Join thousands of professionals and companies already using JobConnect
               </p>
             </div>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link href="/signup">
-                <Button size="lg" className="w-full min-[400px]:w-auto bg-white text-primary hover:bg-gray-100">
-                  Sign Up Now
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full min-[400px]:w-auto border-white text-white hover:bg-primary-foreground/10"
+
+            {!user ? (
+              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                <Link href="/signup">
+                  <Button size="lg" className="w-full min-[400px]:w-auto bg-white text-primary hover:bg-gray-100">
+                    Sign Up Now
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full min-[400px]:w-auto border-white text-white hover:bg-primary-foreground/10"
+                  >
+                    Log In
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                <Link
+                  href={
+                    userRole === "admin"
+                      ? "/admin/dashboard"
+                      : userRole === "candidate"
+                        ? `/candidate/dashboard/${userId}`
+                        : userRole === "employer"
+                          ? `/employer/dashboard/${userId}`
+                          : "/dashboard"
+                  }
                 >
-                  Log In
-                </Button>
-              </Link>
-            </div>
+                  <Button size="lg" className="w-full min-[400px]:w-auto bg-white text-primary hover:bg-gray-100">
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -24,16 +24,7 @@ export default function CandidateLayout({ children }: CandidateLayoutProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   useEffect(() => {
-    // Check if user is logged in and is a candidate
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    if (user.role !== "candidate") {
-      router.push("/")
-      return
-    }
+   
 
     setIsMounted(true)
   }, [user, router])

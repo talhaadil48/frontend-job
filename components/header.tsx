@@ -19,9 +19,11 @@ import { Menu, LogOut, User, Briefcase, FileText } from "lucide-react"
 
 export default function Header() {
   const pathname = usePathname()
-  const { user, logout } = useAuth()
+  const  storedUser = localStorage.getItem("user")
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const {logout} = useAuth()
+  const user = storedUser ? JSON.parse(storedUser) : null
 
   // Handle scroll event to add shadow to header
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function Header() {
                 pathname.includes("dashboard") ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              Dashboard
+              
             </Link>
           )}
           {user?.role === "candidate" && (
@@ -120,7 +122,7 @@ export default function Header() {
                 pathname.includes("applications") ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              My Applications
+             
             </Link>
           )}
           {user?.role === "employer" && (
@@ -130,7 +132,7 @@ export default function Header() {
                 pathname.includes("applications") ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              Applications
+            
             </Link>
           )}
         </nav>
@@ -184,12 +186,14 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer" onClick={() => logout()}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
+                
+            
             </DropdownMenu>
           ) : (
             isPublicPage && (

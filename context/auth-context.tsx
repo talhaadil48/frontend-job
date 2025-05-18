@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { mockUsers } from "@/lib/mock-data"
 import type { User } from "@/lib/types"
+import { useRouter } from "next/navigation"
 
 interface AuthContextType {
   user: User | null
@@ -29,6 +30,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   // Load user from localStorage on initial render
   useEffect(() => {
@@ -72,6 +74,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     setUser(null)
     localStorage.removeItem("user")
+    router.push("/login")
+    
   }
 
   // Sign up function

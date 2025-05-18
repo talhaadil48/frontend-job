@@ -23,12 +23,25 @@ interface DashboardChartProps {
 }
 
 const DashboardChart: React.FC<DashboardChartProps> = ({ data, categories }) => {
-  // Generate labels based on the length of the first dataset
-  const labels = data[0]?.data ? Array.from({ length: data[0].data.length }, (_, i) => `Job ${i + 1}`) : []
+  // Generate labels for the last 6 months
+  const generateMonthLabels = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const labels = []
+    const currentDate = new Date()
+    const currentMonth = currentDate.getMonth()
+
+    // Get the last 6 months (including current month)
+    for (let i = 5; i >= 0; i--) {
+      const monthIndex = (currentMonth - i + 12) % 12 // Handle wrapping around to previous year
+      labels.push(months[monthIndex])
+    }
+
+    return labels
+  }
 
   // Define chart data
   const chartData: ChartData<"line"> = {
-    labels: labels,
+    labels: generateMonthLabels(),
     datasets: data.map((dataset, index) => ({
       label: dataset.name || categories[index] || `Dataset ${index + 1}`,
       data: dataset.data,
@@ -48,7 +61,7 @@ const DashboardChart: React.FC<DashboardChartProps> = ({ data, categories }) => 
       },
       title: {
         display: true,
-        text: "Monthly Revenue",
+        text: "Monthly Growth",
       },
     },
   }

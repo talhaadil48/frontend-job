@@ -25,15 +25,7 @@ export default function EmployerLayout({ children }: EmployerLayoutProps) {
 
   useEffect(() => {
     // Check if user is logged in and is an employer
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    if (user.role !== "employer") {
-      router.push("/")
-      return
-    }
+   
 
     setIsMounted(true)
   }, [user, router])

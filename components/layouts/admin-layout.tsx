@@ -25,16 +25,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     // Check if user is logged in and is an admin
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    if (user.role !== "admin") {
-      router.push("/")
-      return
-    }
-
+   
     setIsMounted(true)
   }, [user, router])
 
