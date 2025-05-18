@@ -19,6 +19,7 @@ export default function ApplicationDetailPage() {
   const [application, setApplication] = useState<any>(null)
   const [matchScore, setMatchScore] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [aiExplanation, setAiExplanation] = useState("")
 
   useEffect(() => {
     // Check if user is logged in
@@ -50,7 +51,7 @@ export default function ApplicationDetailPage() {
 
         // Generate a random match score for demo purposes
         // In a real app, this would come from your backend
-        setMatchScore(Math.floor(Math.random() * 100))
+        // setMatchScore(Math.floor(Math.random() * 100));
 
         setIsLoading(false)
       } catch (error) {
@@ -87,6 +88,64 @@ export default function ApplicationDetailPage() {
     if (status === true) return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
     if (status === false) return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
     return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+  }
+  const checkResume = async () => {
+    try {
+      setIsLoading(true)
+      const resumeUrl = application.application.resume_url
+      const jobDetails =
+        (application.job.tags || []).join(" ") +
+        " " +
+        (application.job.description || "") +
+        " " +
+        (application.job.title || "")
+
+      console.log("resume url", resumeUrl)
+      console.log("job details", jobDetails)
+
+      // Step 1: Extract resume text
+      const resExtract = await fetch("http://localhost:8000/extract_pdf_text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: resumeUrl }),
+      })
+
+      const extractData = await resExtract.json()
+      if (extractData.error) {
+        console.error("Error extracting resume:", extractData.error)
+        setIsLoading(false)
+        return
+      }
+      const resumeText = extractData.text
+      console.log("Extracted text:", resumeText)
+
+      // Step 2: Send extracted resume and job details to match-resume API
+      const resMatch = await fetch("/api/match-resume", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ resumeText, jobDetails }),
+      })
+
+      const matchData = await resMatch.json()
+      console.log("Match result:", matchData)
+
+      // Update the UI with the match score and explanation
+      setMatchScore(matchData.score)
+      setAiExplanation(matchData.explanation)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error checking resume:", error)
+      setIsLoading(false)
+      toast({
+        title: "Error",
+        description: "Failed to check resume. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   // Handle application approval
@@ -281,17 +340,42 @@ export default function ApplicationDetailPage() {
                 <p className="text-muted-foreground mt-1">Match Score</p>
               </div>
               <Progress value={matchScore} className="h-2" />
-              <div className="text-sm mt-4">
-                <p className="mb-2">
-                  This score represents how well the candidate&apos;s profile matches the job requirements based on:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Skills alignment</li>
-                  <li>Experience level</li>
-                  <li>Education background</li>
-                  <li>Resume keywords</li>
-                </ul>
-              </div>
+
+              {aiExplanation && (
+                <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                  <p className="font-medium mb-1">AI Analysis:</p>
+                  <p>{aiExplanation}</p>
+                </div>
+              )}
+
+              <Button onClick={checkResume} className="w-full mt-4" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                    Analyzing...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Check Resume
+                  </span>
+                )}
+              </Button>
+
+              {!aiExplanation && (
+                <div className="text-sm mt-4">
+                  <p className="mb-2">
+                    Click "Check Resume" to analyze how well the candidate&apos;s profile matches the job requirements
+                    based on:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Skills alignment</li>
+                    <li>Experience level</li>
+                    <li>Education background</li>
+                    <li>Resume keywords</li>
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -338,6 +422,7 @@ export default function ApplicationDetailPage() {
           </Button>
         </div>
       </div>
+      <div></div>
     </EmployerLayout>
   )
 }

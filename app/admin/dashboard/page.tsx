@@ -1,30 +1,41 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BarChart, PieChart, Activity, Users, Briefcase, Calendar } from "lucide-react"
+import { BarChart, PieChart, Users, Briefcase, Calendar, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 
 interface User {
-  id: string
-  name: string
-  email: string
-  role: string
+  id?: string
+  user_id?: string
+  name?: string
+  email?: string
+  role?: string
+  is_blocked?: boolean
+  user?: {
+    id: string
+    name: string
+    email: string
+    role: string
+    is_blocked: boolean
+  }
 }
 
 interface Job {
   id: string
   title: string
-  type: string
+  type?: string
   tags: string[]
-  salary: string
+  salary?: string
   deadline: string
   employer_id: string
-  employers: {
+  company_name?: string
+  employers?: {
     company_name: string
-    logo_url: string
+    logo_url?: string
   }
 }
 
@@ -34,74 +45,120 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
+  // Fetch all users with proper error handling and data transformation
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Fetch all users
-        const usersResponse = await fetch("http://localhost:8000/allusers")
-        if (!usersResponse.ok) throw new Error("Failed to fetch users")
-        const usersData = await usersResponse.json()
+      console.log("Fetching users...")
+      const response = await fetch("http://localhost:8000/allusers")
+      if (!response.ok) throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`)
 
-        // Log the response for debugging
-        console.log("Users API response:", usersData)
+      const data = await response.json()
+      console.log("Users API response:", data)
 
-        // Ensure we have an array of users
+      // Handle the array format
+      if (Array.isArray(data)) {
+        setUsers(data)
+      } else {
+        console.warn("API response is not an array as expected:", data)
+
+        // Fallback handling for other formats
         let usersArray: User[] = []
-        if (Array.isArray(usersData)) {
-          usersArray = usersData
-        } else if (usersData && typeof usersData === "object") {
-          // If it's an object with numeric keys, convert to array
-          if (Object.keys(usersData).some((key) => !isNaN(Number(key)))) {
-            usersArray = Object.values(usersData)
+        if (data && typeof data === "object") {
+          if (data.users && Array.isArray(data.users)) {
+            usersArray = data.users
+          } else if (Object.keys(data).some((key) => !isNaN(Number(key)))) {
+            usersArray = Object.values(data)
           } else {
-            // If it's a single user object, wrap in array
-            usersArray = [usersData]
+            usersArray = [data]
           }
         }
 
         setUsers(usersArray)
-
-        // Fetch all jobs
-        const jobsResponse = await fetch("http://localhost:8000/alljobs")
-        if (!jobsResponse.ok) throw new Error("Failed to fetch jobs")
-        const jobsData = await jobsResponse.json()
-
-        // Log the response for debugging
-        console.log("Jobs API response:", jobsData)
-
-        // Ensure we have an array of jobs
-        let jobsArray: Job[] = []
-        if (Array.isArray(jobsData)) {
-          jobsArray = jobsData
-        } else if (jobsData && typeof jobsData === "object") {
-          // If it's an object with numeric keys, convert to array
-          if (Object.keys(jobsData).some((key) => !isNaN(Number(key)))) {
-            jobsArray = Object.values(jobsData)
-          } else {
-            // If it's a single job object, wrap in array
-            jobsArray = [jobsData]
-          }
-        }
-
-        setJobs(jobsArray)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred")
-        console.error(err)
-      } finally {
-        setLoading(false)
       }
+    } catch (err) {
+      console.error("Error fetching users:", err)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
     }
-
-    fetchData()
   }, [])
+
+  // Fetch all jobs with proper error handling and data transformation
+  const fetchJobs = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      console.log("Fetching jobs...")
+      const response = await fetch("http://localhost:8000/alljobs")
+      if (!response.ok) throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`)
+
+      const data = await response.json()
+      console.log("Jobs API response:", data)
+
+      // Ensure we have an array of jobs
+      let jobsArray: Job[] = []
+      if (Array.isArray(data)) {
+        jobsArray = data
+      } else if (data && typeof data === "object") {
+        // If it's an object with numeric keys, convert to array
+        if (Object.keys(data).some((key) => !isNaN(Number(key)))) {
+          jobsArray = Object.values(data)
+        } else if (data.jobs && Array.isArray(data.jobs)) {
+          // If it has a jobs property that's an array
+          jobsArray = data.jobs
+        } else {
+          // If it's a single job object, wrap in array
+          jobsArray = [data]
+        }
+      }
+
+      // Ensure each job has tags as an array
+      jobsArray = jobsArray.map((job) => ({
+        ...job,
+        tags: Array.isArray(job.tags) ? job.tags : job.tags ? [job.tags] : [],
+      }))
+
+      setJobs(jobsArray)
+    } catch (err) {
+      console.error("Error fetching jobs:", err)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
+    }
+  }, [])
+
+  // Fetch all data
+  const fetchAllData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch both users and jobs in parallel
+      await Promise.all([fetchUsers(), fetchJobs()])
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchUsers, fetchJobs])
+
+  useEffect(() => {
+    fetchAllData()
+  }, [fetchAllData])
+
+  // Helper function to get user role safely
+  const getUserRole = (user: User): string => {
+    if (user.role) return user.role
+    if (user.user?.role) return user.user.role
+    return "unknown"
+  }
 
   // Calculate statistics
   const totalUsers = users.length
   const totalJobs = jobs.length
-  const totalCandidates = users.filter((user) => user.role === "candidate").length
-  const totalEmployers = users.filter((user) => user.role === "employer").length
+  const totalCandidates = users.filter((user) => getUserRole(user) === "candidate").length
+  const totalEmployers = users.filter((user) => getUserRole(user) === "employer").length
 
   // Calculate job types distribution
   const jobTypes = jobs.reduce(
@@ -132,11 +189,30 @@ export default function DashboardPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    } catch (e) {
+      return dateString
+    }
+  }
+
+  // Get company name safely
+  const getCompanyName = (job: Job): string => {
+    return job.company_name || job.employers?.company_name || "Unknown Company"
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <Activity className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
           <h2 className="mt-4 text-xl font-semibold">Loading dashboard data...</h2>
         </div>
       </div>
@@ -146,10 +222,12 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-destructive">Error loading dashboard</h2>
-          <p className="mt-2">{error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
+        <div className="max-w-md w-full">
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error loading dashboard</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={() => fetchAllData()} className="w-full">
             Try Again
           </Button>
         </div>
@@ -162,10 +240,10 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center space-x-2">
-          <Link href="manage-users">
+          <Link href="/admin/manage-users">
             <Button>Manage Users</Button>
           </Link>
-          <Link href="manage-jobs">
+          <Link href="/admin/manage-jobs">
             <Button>Manage Jobs</Button>
           </Link>
         </div>
@@ -174,7 +252,7 @@ export default function DashboardPage() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -241,7 +319,7 @@ export default function DashboardPage() {
                       <div className="space-y-1">
                         <p className="text-sm font-medium leading-none">{job.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          {job.employers?.company_name || "Unknown"} • {job.type || "N/A"}
+                          {getCompanyName(job)} • {job.type || "N/A"}
                         </p>
                       </div>
                       <div className="ml-auto font-medium">{job.salary || "N/A"}</div>
