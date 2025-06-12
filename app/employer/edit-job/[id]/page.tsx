@@ -78,7 +78,7 @@ export default function EditJobPage() {
     // Fetch job data
     const fetchJob = async () => {
       try {
-        const response = await fetch(`https://backend-job-eight.vercel.app//job/${params.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app/job/${params.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch job data")
         }
@@ -150,7 +150,7 @@ export default function EditJobPage() {
       }
 
       // Call API to update job
-      const response = await fetch("https://backend-job-eight.vercel.app//updatejob", {
+      const response = await fetch("https://backend-job-eight.vercel.app/updatejob", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

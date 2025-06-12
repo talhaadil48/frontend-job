@@ -80,7 +80,7 @@ export default function ManageUsersPage() {
       setError(null)
 
       console.log("Fetching users...")
-      const response = await fetch("https://backend-job-eight.vercel.app//allusers")
+      const response = await fetch("https://backend-job-eight.vercel.app/allusers")
       if (!response.ok) throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`)
 
       const data = await response.json()
@@ -120,7 +120,7 @@ export default function ManageUsersPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`https://backend-job-eight.vercel.app//user/${userId}`)
+      const response = await fetch(`https://backend-job-eight.vercel.app/user/${userId}`)
       if (!response.ok) throw new Error(`Failed to fetch user details: ${response.status} ${response.statusText}`)
 
       const data = await response.json()
@@ -176,7 +176,7 @@ export default function ManageUsersPage() {
       setError(null)
 
       // Create user
-      const userResponse = await fetch("https://backend-job-eight.vercel.app//user", {
+      const userResponse = await fetch("https://backend-job-eight.vercel.app/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +197,7 @@ export default function ManageUsersPage() {
 
       // If candidate, create candidate details
       if (formData.role === "candidate") {
-        const candidateResponse = await fetch("https://backend-job-eight.vercel.app//candidate", {
+        const candidateResponse = await fetch("https://backend-job-eight.vercel.app/candidate", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -218,7 +218,7 @@ export default function ManageUsersPage() {
 
       // If employer, create employer details
       if (formData.role === "employer") {
-        const employerResponse = await fetch("https://backend-job-eight.vercel.app//employer", {
+        const employerResponse = await fetch("https://backend-job-eight.vercel.app/employer", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -278,7 +278,7 @@ export default function ManageUsersPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch("https://backend-job-eight.vercel.app//updateuser", {
+      const response = await fetch("https://backend-job-eight.vercel.app/updateuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -330,7 +330,7 @@ export default function ManageUsersPage() {
       setError(null)
       console.log("Deleting user:", selectedUser.user.id)
 
-      const response = await fetch("https://backend-job-eight.vercel.app//deluser", {
+      const response = await fetch("https://backend-job-eight.vercel.app/deluser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

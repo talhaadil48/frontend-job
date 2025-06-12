@@ -83,7 +83,7 @@ export default function ManageJobsPage() {
     try {
       // Fetch employer details for each ID
       const employerPromises = uncachedEmployerIds.map(async (employerId) => {
-        const response = await fetch(`https://backend-job-eight.vercel.app//user/${employerId}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app/user/${employerId}`)
         if (!response.ok) {
           throw new Error(`Failed to fetch employer data: ${response.status}`)
         }
@@ -132,7 +132,7 @@ export default function ManageJobsPage() {
       setError(null)
       
       console.log("Fetching jobs...")
-      const response = await fetch("https://backend-job-eight.vercel.app//alljobs")
+      const response = await fetch("https://backend-job-eight.vercel.app/alljobs")
       if (!response.ok) throw new Error("Failed to fetch jobs")
       
       const data = await response.json()
@@ -187,7 +187,7 @@ export default function ManageJobsPage() {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`https://backend-job-eight.vercel.app//job/${jobId}`)
+      const response = await fetch(`https://backend-job-eight.vercel.app/job/${jobId}`)
       if (!response.ok) throw new Error("Failed to fetch job details")
       
       const data = await response.json()
@@ -237,7 +237,7 @@ export default function ManageJobsPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch("https://backend-job-eight.vercel.app//job", {
+      const response = await fetch("https://backend-job-eight.vercel.app/job", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -285,7 +285,7 @@ export default function ManageJobsPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch("https://backend-job-eight.vercel.app//updatejob", {
+      const response = await fetch("https://backend-job-eight.vercel.app/updatejob", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -322,7 +322,7 @@ export default function ManageJobsPage() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch("https://backend-job-eight.vercel.app//deljob", {
+      const response = await fetch("https://backend-job-eight.vercel.app/deljob", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

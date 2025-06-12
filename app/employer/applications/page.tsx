@@ -55,7 +55,7 @@ export default function EmployerApplicationsPage() {
     // Fetch user data with jobs and applications
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://backend-job-eight.vercel.app//user/${userData.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app/user/${userData.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch user data")
         }
@@ -71,14 +71,14 @@ export default function EmployerApplicationsPage() {
           const enhancedApplications = await Promise.all(
             pendingApplications.map(async (app: any) => {
               // Fetch job details
-              const jobResponse = await fetch(`https://backend-job-eight.vercel.app//job/${app.job_id}`)
+              const jobResponse = await fetch(`https://backend-job-eight.vercel.app/job/${app.job_id}`)
               const jobData = await jobResponse.json()
 
               // Get candidate details from the application data
               const candidateData = app.candidates || {}
 
               // Fetch candidate user data
-              const candidateUserResponse = await fetch(`https://backend-job-eight.vercel.app//user/${app.candidate_id}`)
+              const candidateUserResponse = await fetch(`https://backend-job-eight.vercel.app/user/${app.candidate_id}`)
               const candidateUserData = await candidateUserResponse.json()
 
               return {

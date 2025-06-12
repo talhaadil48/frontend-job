@@ -70,7 +70,7 @@ export default function CreateAdminModal({ isOpen, onClose, onCreateAdmin }: Cre
       }
 
       // Send request to API to create admin
-      const response = await fetch("https://backend-job-eight.vercel.app//user", {
+      const response = await fetch("https://backend-job-eight.vercel.app/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

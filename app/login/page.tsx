@@ -47,7 +47,7 @@ export default function LoginPage() {
     try {
       // Call the FastAPI endpoint to get user by email and role
       const response = await fetch(
-        `https://backend-job-eight.vercel.app//user_by_email_role?email=${values.email}&role=${values.role}`,
+        `https://backend-job-eight.vercel.app/user_by_email_role?email=${values.email}&role=${values.role}`,
         {
           method: "GET",
           headers: {

@@ -139,7 +139,7 @@ export default function CandidateProfilePage() {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch(`https://backend-job-eight.vercel.app//user/${user.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app/user/${user.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch user data")
         }
@@ -252,7 +252,7 @@ export default function CandidateProfilePage() {
       }
 
       // Update user profile via API
-      const response = await fetch("https://backend-job-eight.vercel.app//updateuser", {
+      const response = await fetch("https://backend-job-eight.vercel.app/updateuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -328,7 +328,7 @@ export default function CandidateProfilePage() {
       const skillsArray = values.skills ? values.skills.split(",").map((skill) => skill.trim()) : []
 
       // Update candidate profile via API
-      const response = await fetch("https://backend-job-eight.vercel.app//updateuser", {
+      const response = await fetch("https://backend-job-eight.vercel.app/updateuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

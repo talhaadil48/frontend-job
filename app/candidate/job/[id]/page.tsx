@@ -80,7 +80,7 @@ export default function JobDetailPage() {
         const jobId = params.id as string
 
         // Fetch job details
-        const jobResponse = await fetch(`https://backend-job-eight.vercel.app//job/${jobId}`)
+        const jobResponse = await fetch(`https://backend-job-eight.vercel.app/job/${jobId}`)
         if (!jobResponse.ok) {
           throw new Error(`Failed to fetch job details: ${jobResponse.status} ${jobResponse.statusText}`)
         }
@@ -91,7 +91,7 @@ export default function JobDetailPage() {
         }
 
         // Fetch employer details
-        const employerResponse = await fetch(`https://backend-job-eight.vercel.app//user/${jobData.job.employer_id}`)
+        const employerResponse = await fetch(`https://backend-job-eight.vercel.app/user/${jobData.job.employer_id}`)
         if (!employerResponse.ok) {
           throw new Error(`Failed to fetch employer details: ${employerResponse.status}`)
         }
@@ -99,7 +99,7 @@ export default function JobDetailPage() {
         const employerData = await employerResponse.json()
 
         // Fetch all jobs to get related jobs from same employer
-        const allJobsResponse = await fetch("https://backend-job-eight.vercel.app//alljobs")
+        const allJobsResponse = await fetch("https://backend-job-eight.vercel.app/alljobs")
         if (!allJobsResponse.ok) {
           throw new Error(`Failed to fetch all jobs: ${allJobsResponse.status}`)
         }
@@ -118,7 +118,7 @@ export default function JobDetailPage() {
           }))
 
         // Check if user has already applied
-        const userResponse = await fetch(`https://backend-job-eight.vercel.app//user/${user.id}`)
+        const userResponse = await fetch(`https://backend-job-eight.vercel.app/user/${user.id}`)
         if (!userResponse.ok) {
           throw new Error(`Failed to fetch user applications: ${userResponse.status}`)
         }
@@ -184,7 +184,7 @@ export default function JobDetailPage() {
       }
 
       // Submit application to API
-      const response = await fetch("https://backend-job-eight.vercel.app//application", {
+      const response = await fetch("https://backend-job-eight.vercel.app/application", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

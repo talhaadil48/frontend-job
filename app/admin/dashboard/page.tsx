@@ -52,7 +52,7 @@ export default function DashboardPage() {
       setError(null)
 
       console.log("Fetching users...")
-      const response = await fetch("https://backend-job-eight.vercel.app//allusers")
+      const response = await fetch("https://backend-job-eight.vercel.app/allusers")
       if (!response.ok) throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`)
 
       const data = await response.json()
@@ -91,7 +91,7 @@ export default function DashboardPage() {
       setError(null)
 
       console.log("Fetching jobs...")
-      const response = await fetch("https://backend-job-eight.vercel.app//alljobs")
+      const response = await fetch("https://backend-job-eight.vercel.app/alljobs")
       if (!response.ok) throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`)
 
       const data = await response.json()

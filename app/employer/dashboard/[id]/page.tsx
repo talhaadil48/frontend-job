@@ -77,7 +77,7 @@ export default function EmployerDashboard() {
     // Fetch user data with jobs and applications
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://backend-job-eight.vercel.app//user/${params.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app/user/${params.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch user data")
         }
