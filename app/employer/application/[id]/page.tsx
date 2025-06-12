@@ -41,7 +41,7 @@ export default function ApplicationDetailPage() {
     // Fetch application data
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/application/${params.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app//application/${params.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch application data")
         }
@@ -104,7 +104,7 @@ export default function ApplicationDetailPage() {
       console.log("job details", jobDetails)
 
       // Step 1: Extract resume text
-      const resExtract = await fetch("http://localhost:8000/extract_pdf_text", {
+      const resExtract = await fetch("https://backend-job-eight.vercel.app//extract_pdf_text", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +152,7 @@ export default function ApplicationDetailPage() {
   const handleApprove = async () => {
     try {
       // Update application status
-      const response = await fetch("http://localhost:8000/updateapplication", {
+      const response = await fetch("https://backend-job-eight.vercel.app//updateapplication", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +195,7 @@ export default function ApplicationDetailPage() {
   const handleReject = async () => {
     try {
       // Update application status
-      const response = await fetch("http://localhost:8000/updateapplication", {
+      const response = await fetch("https://backend-job-eight.vercel.app//updateapplication", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -103,7 +103,7 @@ export default function EmployerProfilePage() {
     // Fetch user data
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/user/${params.id}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app//user/${params.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch user data")
         }
@@ -180,7 +180,7 @@ export default function EmployerProfilePage() {
       }
 
       // Update user profile
-      const response = await fetch("http://localhost:8000/updateuser", {
+      const response = await fetch("https://backend-job-eight.vercel.app//updateuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +254,7 @@ export default function EmployerProfilePage() {
       }
 
       // Update company profile
-      const response = await fetch("http://localhost:8000/updateuser", {
+      const response = await fetch("https://backend-job-eight.vercel.app//updateuser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

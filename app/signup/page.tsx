@@ -161,7 +161,7 @@ export default function SignupPage() {
       }
 
       // Create user
-      const userResponse = await fetch("http://localhost:8000/user", {
+      const userResponse = await fetch("https://backend-job-eight.vercel.app//user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -187,7 +187,7 @@ export default function SignupPage() {
       const skillsArray = values.skills ? values.skills.split(",").map((skill) => skill.trim()) : []
      
       // Create candidate details
-      const candidateResponse = await fetch("http://localhost:8000/candidate", {
+      const candidateResponse = await fetch("https://backend-job-eight.vercel.app//candidate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -246,7 +246,7 @@ export default function SignupPage() {
       }
 
       // Create user
-      const userResponse = await fetch("http://localhost:8000/user", {
+      const userResponse = await fetch("https://backend-job-eight.vercel.app//user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +271,7 @@ export default function SignupPage() {
       const user = userData.data[0]
 
       // Create employer details
-      const employerResponse = await fetch("http://localhost:8000/employer", {
+      const employerResponse = await fetch("https://backend-job-eight.vercel.app//employer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

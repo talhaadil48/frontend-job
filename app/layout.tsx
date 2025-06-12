@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   title: "JobConnect - Find Your Next Career",
   description: "A professional job board connecting employers and candidates",
   generator: "v0.dev",
-}
+  icons : "/logo.png"
+} 
 
 export default function RootLayout({
   children,

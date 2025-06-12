@@ -85,7 +85,7 @@ export default function CandidateDashboard() {
       // In a real implementation, you would have a batch API endpoint
       // For now, we'll fetch them individually but store in cache
       const employerPromises = uncachedEmployerIds.map(async (employerId) => {
-        const response = await fetch(`http://localhost:8000/user/${employerId}`)
+        const response = await fetch(`https://backend-job-eight.vercel.app//user/${employerId}`)
         if (!response.ok) {
           throw new Error(`Failed to fetch employer data: ${response.status}`)
         }
@@ -137,7 +137,7 @@ export default function CandidateDashboard() {
 
         // In a real implementation, you would have pagination parameters
         // For now, we'll simulate pagination by slicing the data
-        const response = await fetch("http://localhost:8000/alljobs")
+        const response = await fetch("https://backend-job-eight.vercel.app//alljobs")
         if (!response.ok) {
           throw new Error(`Failed to fetch jobs: ${response.status} ${response.statusText}`)
         }

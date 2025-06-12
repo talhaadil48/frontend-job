@@ -107,7 +107,7 @@ export default function CreateJobPage() {
       }
 
       // Call API to create job
-      const response = await fetch("http://localhost:8000/job", {
+      const response = await fetch("https://backend-job-eight.vercel.app//job", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
